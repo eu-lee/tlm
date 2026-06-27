@@ -72,8 +72,6 @@ def main():
     p.add_argument("--top-k", type=int, default=50)
     p.add_argument("--top-p", type=float, default=0.95)
     p.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
-    p.add_argument("--raw", action="store_true",
-                   help="Skip chat template; feed --prompt as raw text (completion mode)")
     args = p.parse_args()
 
     print(f"loading tokenizer: {args.tokenizer}")
@@ -91,14 +89,7 @@ def main():
     print(f"model: {cfg.d_model}d, {cfg.n_layers}L, step {step}")
 
     def run(user_prompt: str):
-        if args.raw:
-            text = user_prompt
-        else:
-            messages = [{"role": "user", "content": user_prompt}]
-            text = tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True,
-            )
-        input_ids = tokenizer(text, return_tensors="pt").input_ids
+        input_ids = tokenizer(user_prompt, return_tensors="pt").input_ids
 
         out_ids = generate(
             model, tokenizer, input_ids,
